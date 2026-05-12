@@ -15,4 +15,4 @@ collection: books
 
 Al mio stimato collega,
 
-una volta che avvi il sito con `npm start`, il backend si avvia su `localhost:3000/api/books` e il frontend su `localhost:5173`
+una volta che avvi il backend con `npm start` e il frontend con `npm run dev`, il backend si avvia su `localhost:3000/api/books` e il frontend su `localhost:5173`
