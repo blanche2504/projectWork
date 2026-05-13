@@ -9,6 +9,7 @@ function App() {
         <div className="container mt-4">
             <Header />
             <BookList />
+            <hr />
             <AddBook />
         </div>
     );
