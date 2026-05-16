@@ -1,17 +1,200 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+async function fetchCover(titolo, autore) {
+  try {
+    const query = encodeURIComponent(`${titolo} ${autore}`);
+    const res = await fetch(
+      `https://openlibrary.org/search.json?q=${query}&limit=1&fields=isbn,cover_i`,
+    );
+    const data = await res.json();
+    const doc = data.docs?.[0];
+    if (doc?.cover_i) {
+      return `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
+    }
+    if (doc?.isbn?.[0]) {
+      return `https://covers.openlibrary.org/b/isbn/${doc.isbn[0]}-M.jpg`;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+const FALLBACK_HTML =
+  '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;color:#aaa"><span style="font-size:44px">📚</span><small>Copertina non disponibile</small></div>';
+
+function BookCard({ book, cover, onEdit, onDelete }) {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <>
+      <div
+        className="card border-0 shadow-sm overflow-hidden"
+        style={{ cursor: "pointer" }}
+        onClick={() => setShowModal(true)}
+      >
+        <div
+          style={{
+            aspectRatio: "2/3",
+            width: "100%",
+            background: "#f0f0f0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
+          {cover === undefined ? (
+            <div className="d-flex flex-column align-items-center gap-2 text-muted">
+              <div
+                className="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              />
+              <small>Caricamento...</small>
+            </div>
+          ) : cover ? (
+            <img
+              src={cover}
+              alt={`Copertina di ${book.titolo}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onLoad={(e) => {
+                if (e.target.naturalWidth <= 1) {
+                  e.target.style.display = "none";
+                  e.target.parentNode.innerHTML = FALLBACK_HTML;
+                }
+              }}
+              onError={(e) => {
+                e.target.style.display = "none";
+                e.target.parentNode.innerHTML = FALLBACK_HTML;
+              }}
+            />
+          ) : (
+            <div className="d-flex flex-column align-items-center gap-2 text-muted">
+              <span style={{ fontSize: 44 }}>📚</span>
+              <small>Copertina non disponibile</small>
+            </div>
+          )}
+        </div>
+
+        <div className="card-body">
+          <h6 className="card-title text-truncate mb-1">{book.titolo}</h6>
+          <small className="text-body-secondary">{book.autore}</small>
+        </div>
+      </div>
+
+      {showModal && (
+        <div
+          className="modal d-block"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="modal-dialog modal-dialog-centered"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-content border-0 shadow overflow-hidden">
+              <button
+                className="btn-close position-absolute top-0 end-0 m-3"
+                style={{ zIndex: 10 }}
+                onClick={() => setShowModal(false)}
+              />
+              <div className="d-flex">
+                <div
+                  style={{
+                    width: 140,
+                    minWidth: 140,
+                    background: "#f0f0f0",
+                    overflow: "hidden",
+                  }}
+                >
+                  {cover ? (
+                    <img
+                      src={cover}
+                      alt={`Copertina di ${book.titolo}`}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                      onLoad={(e) => {
+                        if (e.target.naturalWidth <= 1)
+                          e.target.style.display = "none";
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div
+                      className="d-flex align-items-center justify-content-center h-100"
+                      style={{ minHeight: 180 }}
+                    >
+                      <span style={{ fontSize: 36 }}>📚</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 d-flex flex-column flex-grow-1">
+                  <h5 className="fw-semibold mb-1">{book.titolo}</h5>
+                  <p className="text-body-secondary mb-3">{book.autore}</p>
+                  <p
+                    className="text-muted flex-grow-1"
+                    style={{ fontSize: 14, lineHeight: 1.7 }}
+                  >
+                    {book.descrizione || "Nessuna descrizione disponibile."}
+                  </p>
+                  <div className="d-flex gap-2 mt-3">
+                    <button
+                      className="btn btn-sm btn-outline-primary flex-grow-1"
+                      onClick={() => {
+                        setShowModal(false);
+                        onEdit();
+                      }}
+                    >
+                      Modifica
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => {
+                        setShowModal(false);
+                        onDelete();
+                      }}
+                    >
+                      Elimina
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function BookList() {
   const [books, setBooks] = useState([]);
+  const [covers, setCovers] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
-  const [expandedId, setExpandedId] = useState(null);
   const [editingBook, setEditingBook] = useState(null);
 
   useEffect(() => {
     fetchBooks();
   }, []);
+
+  useEffect(() => {
+    if (books.length === 0) return;
+    books.forEach(async (book) => {
+      if (covers[book._id] !== undefined) return;
+      const url = await fetchCover(book.titolo, book.autore);
+      setCovers((prev) => ({ ...prev, [book._id]: url }));
+    });
+  }, [books]);
 
   function fetchBooks() {
     axios
@@ -26,29 +209,33 @@ function BookList() {
       });
   }
 
-  function toggleExpand(id) {
-    setExpandedId(expandedId === id ? null : id);
-  }
-
   async function handleDelete(id) {
     if (!confirm("Sei sicuro di voler eliminare questo libro?")) return;
     try {
       await axios.delete(`http://localhost:3000/api/books/${id}`);
-      setBooks(books.filter((b) => b._id !== id));
+      setBooks((prev) => prev.filter((b) => b._id !== id));
+      setCovers((prev) => {
+        const c = { ...prev };
+        delete c[id];
+        return c;
+      });
     } catch (err) {
       console.error(err);
     }
   }
 
-  async function handleEditSubmit(e) {
-    e.preventDefault();
+  async function handleEditSubmit() {
     try {
       await axios.put(`http://localhost:3000/api/books/${editingBook._id}`, {
         titolo: editingBook.titolo,
         autore: editingBook.autore,
         descrizione: editingBook.descrizione,
       });
-      setBooks(books.map((b) => (b._id === editingBook._id ? editingBook : b)));
+      setBooks((prev) =>
+        prev.map((b) => (b._id === editingBook._id ? editingBook : b)),
+      );
+      const url = await fetchCover(editingBook.titolo, editingBook.autore);
+      setCovers((prev) => ({ ...prev, [editingBook._id]: url }));
       setEditingBook(null);
     } catch (err) {
       console.error(err);
@@ -67,7 +254,6 @@ function BookList() {
 
   return (
     <div>
-      {/* Modifica */}
       {editingBook && (
         <div
           className="modal d-block"
@@ -128,7 +314,6 @@ function BookList() {
         </div>
       )}
 
-      {/* Barra di ricerca */}
       <div className="mb-4">
         <input
           type="text"
@@ -139,43 +324,15 @@ function BookList() {
         />
       </div>
 
-      {/* Lista libri */}
-      <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div className="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
         {filtered.map((book) => (
           <div className="col" key={book._id}>
-            <div className="card h-100 shadow-sm border-0">
-              <div
-                className="card-body"
-                style={{ cursor: "pointer" }}
-                onClick={() => toggleExpand(book._id)}
-              >
-                <h5 className="card-title">{book.titolo}</h5>
-                <h6 className="card-subtitle text-body-secondary mb-2">
-                  {book.autore}
-                </h6>
-                {expandedId === book._id && (
-                  <>
-                    <p className="card-text mt-2 text-muted">
-                      {book.descrizione || "Nessuna descrizione disponibile."}
-                    </p>
-                    <div className="card-footer bg-transparent border-0 d-flex justify-content-end gap-2">
-                      <button
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => setEditingBook(book)}
-                      >
-                        Modifica
-                      </button>
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => handleDelete(book._id)}
-                      >
-                        Elimina
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+            <BookCard
+              book={book}
+              cover={covers[book._id]}
+              onEdit={() => setEditingBook(book)}
+              onDelete={() => handleDelete(book._id)}
+            />
           </div>
         ))}
       </div>

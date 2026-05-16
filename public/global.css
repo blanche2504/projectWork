@@ -19,3 +19,24 @@ header img,
 h2 {
     font-size: 1.3rem;
 }
+
+[data-bs-theme="dark"] .card .card-placeholder-bg {
+    background: #2a2a2a;
+}
+
+[data-bs-theme="dark"] .modal-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+.card .card-placeholder-bg {
+    background: #f0f0f0;
+}
+
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.6);
+}
