@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api.js";
 
 async function fetchCover(titolo, autore) {
   try {
@@ -24,7 +24,7 @@ async function fetchCover(titolo, autore) {
 const FALLBACK_HTML =
   '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;color:#aaa"><span style="font-size:44px">📚</span><small>Copertina non disponibile</small></div>';
 
-function BookCard({ book, cover, onEdit, onDelete }) {
+function BookCard({ book, cover, onEdit, onDelete, isAuthenticated }) {
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -145,26 +145,28 @@ function BookCard({ book, cover, onEdit, onDelete }) {
                   >
                     {book.descrizione || "Nessuna descrizione disponibile."}
                   </p>
-                  <div className="d-flex gap-2 mt-3">
-                    <button
-                      className="btn btn-sm btn-outline-primary flex-grow-1"
-                      onClick={() => {
-                        setShowModal(false);
-                        onEdit();
-                      }}
-                    >
-                      Modifica
-                    </button>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => {
-                        setShowModal(false);
-                        onDelete();
-                      }}
-                    >
-                      Elimina
-                    </button>
-                  </div>
+                  {isAuthenticated && (
+                    <div className="d-flex gap-2 mt-3">
+                      <button
+                        className="btn btn-sm btn-outline-primary flex-grow-1"
+                        onClick={() => {
+                          setShowModal(false);
+                          onEdit();
+                        }}
+                      >
+                        Modifica
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => {
+                          setShowModal(false);
+                          onDelete();
+                        }}
+                      >
+                        Elimina
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -175,7 +177,7 @@ function BookCard({ book, cover, onEdit, onDelete }) {
   );
 }
 
-function BookList() {
+function BookList({ isAuthenticated }) {
   const [books, setBooks] = useState([]);
   const [covers, setCovers] = useState({});
   const [loading, setLoading] = useState(true);
@@ -197,8 +199,8 @@ function BookList() {
   }, [books]);
 
   function fetchBooks() {
-    axios
-      .get("http://localhost:3000/api/books")
+    api
+      .get("/api/books")
       .then((res) => {
         setBooks(res.data);
         setLoading(false);
@@ -212,7 +214,7 @@ function BookList() {
   async function handleDelete(id) {
     if (!confirm("Sei sicuro di voler eliminare questo libro?")) return;
     try {
-      await axios.delete(`http://localhost:3000/api/books/${id}`);
+      await api.delete(`/api/books/${id}`);
       setBooks((prev) => prev.filter((b) => b._id !== id));
       setCovers((prev) => {
         const c = { ...prev };
@@ -226,7 +228,7 @@ function BookList() {
 
   async function handleEditSubmit() {
     try {
-      await axios.put(`http://localhost:3000/api/books/${editingBook._id}`, {
+      await api.put(`/api/books/${editingBook._id}`, {
         titolo: editingBook.titolo,
         autore: editingBook.autore,
         descrizione: editingBook.descrizione,
@@ -330,6 +332,7 @@ function BookList() {
             <BookCard
               book={book}
               cover={covers[book._id]}
+              isAuthenticated={isAuthenticated}
               onEdit={() => setEditingBook(book)}
               onDelete={() => handleDelete(book._id)}
             />

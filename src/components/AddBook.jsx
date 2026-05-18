@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../api.js";
 
 function AddBook() {
     const [form, setForm] = useState({ titolo: "", autore: "" });
@@ -15,12 +15,7 @@ function AddBook() {
     async function handleSubmit(e) {
         e.preventDefault();
         try {
-            const response = await axios.post(
-                "http://localhost:3000/api/books",
-                {
-                    ...form,
-                },
-            );
+            const response = await api.post("/api/books", { ...form });
 
             setMessage(response.data.message);
             setForm({ titolo: "", autore: "" });
