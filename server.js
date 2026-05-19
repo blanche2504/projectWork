@@ -71,7 +71,7 @@ APP.get("/api/books", async (_req, res) => {
 
 APP.post("/api/books", authenticateToken, async (req, res) => {
     try {
-        const { titolo, autore } = req.body;
+        const { titolo, autore, anno, genere } = req.body;
 
         if (!titolo || !autore) {
             return res
@@ -84,7 +84,7 @@ APP.post("/api/books", authenticateToken, async (req, res) => {
         const db = client.db(DB_NAME);
         const result = await db
             .collection("books")
-            .insertOne({ titolo, autore });
+            .insertOne({ titolo, autore, anno, genere });
         await client.close();
 
         res.status(201).json({
@@ -113,7 +113,7 @@ APP.delete("/api/books/:id", authenticateToken, async (req, res) => {
 
 APP.put("/api/books/:id", authenticateToken, async (req, res) => {
     try {
-        const { titolo, autore, descrizione } = req.body;
+        const { titolo, autore, anno, genere, descrizione } = req.body;
         const client = new MongoClient(MONGO_URI);
         await client.connect();
         const db = client.db(DB_NAME);
@@ -121,7 +121,7 @@ APP.put("/api/books/:id", authenticateToken, async (req, res) => {
             .collection("books")
             .updateOne(
                 { _id: new ObjectId(req.params.id) },
-                { $set: { titolo, autore, descrizione } },
+                { $set: { titolo, autore, anno, genere, descrizione } },
             );
         await client.close();
         res.json({ message: "Libro aggiornato" });

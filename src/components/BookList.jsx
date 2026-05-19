@@ -81,6 +81,10 @@ function BookCard({ book, cover, onEdit, onDelete, isAuthenticated }) {
         <div className="card-body">
           <h6 className="card-title text-truncate mb-1">{book.titolo}</h6>
           <small className="text-body-secondary">{book.autore}</small>
+          <div className="d-flex gap-2 mt-1">
+            {book.anno && <span className="badge bg-light text-dark">{book.anno}</span>}
+            {book.genere && <span className="badge bg-light text-dark">{book.genere}</span>}
+          </div>
         </div>
       </div>
 
@@ -138,7 +142,12 @@ function BookCard({ book, cover, onEdit, onDelete, isAuthenticated }) {
 
                 <div className="p-4 d-flex flex-column flex-grow-1">
                   <h5 className="fw-semibold mb-1">{book.titolo}</h5>
-                  <p className="text-body-secondary mb-3">{book.autore}</p>
+                  <p className="text-body-secondary mb-1">{book.autore}</p>
+                  {(book.anno || book.genere) && (
+                    <p className="text-muted mb-2" style={{ fontSize: 13 }}>
+                      {[book.anno, book.genere].filter(Boolean).join(" — ")}
+                    </p>
+                  )}
                   <p
                     className="text-muted flex-grow-1"
                     style={{ fontSize: 14, lineHeight: 1.7 }}
@@ -231,6 +240,8 @@ function BookList({ isAuthenticated }) {
       await api.put(`/api/books/${editingBook._id}`, {
         titolo: editingBook.titolo,
         autore: editingBook.autore,
+        anno: editingBook.anno,
+        genere: editingBook.genere,
         descrizione: editingBook.descrizione,
       });
       setBooks((prev) =>
@@ -287,6 +298,23 @@ function BookList({ isAuthenticated }) {
                   value={editingBook.autore}
                   onChange={(e) =>
                     setEditingBook({ ...editingBook, autore: e.target.value })
+                  }
+                />
+                <input
+                  className="form-control mb-2"
+                  type="number"
+                  placeholder="Anno di pubblicazione"
+                  value={editingBook.anno || ""}
+                  onChange={(e) =>
+                    setEditingBook({ ...editingBook, anno: e.target.value })
+                  }
+                />
+                <input
+                  className="form-control mb-2"
+                  placeholder="Genere"
+                  value={editingBook.genere || ""}
+                  onChange={(e) =>
+                    setEditingBook({ ...editingBook, genere: e.target.value })
                   }
                 />
                 <textarea
