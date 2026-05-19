@@ -1,1 +1,8 @@
-{"_id":{"$oid":"69f37dffffffffff44ba89"},"username":"admin","password":"$2b$10$Y5USEEixbDHlRj9zGkjtF.wMMnHc.4IePtGtXRfAOkheQuimymuZy","role":"admin"}
+[
+  {
+    "_id": "6a0b24d8e0aca30009116fac",
+    "username": "admin",
+    "password": "$2b$10$dUaD83D5Jx8LYeFOuAVyP.n5MvcDtbpHjeLJZWPdqY/sbXXltTyX.",
+    "role": "admin"
+  }
+]
