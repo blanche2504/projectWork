@@ -20,11 +20,15 @@ private e inviolabili perfavore ignorare grazie millissimo
 ### MongoDB
 
 database: pw_libreria
+
 collection: books
+
 collection: users
 
 User di default:
+
 username: admin
+
 password: admin
 
 ### Sito
@@ -35,10 +39,10 @@ una volta che avvi il backend con `npm start` e il frontend con `npm run dev`, i
 
 ### Routes
 
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| POST | `/api/login` | No | Login |
-| GET | `/api/books` | No | Get all books |
-| POST | `/api/books` | Yes | Add a book |
-| PUT | `/api/books/:id` | Yes | Update a book |
-| DELETE | `/api/books/:id` | Yes | Delete a book |
+| Method | Route            | Auth | Description   |
+| ------ | ---------------- | ---- | ------------- |
+| POST   | `/api/login`     | No   | Login         |
+| GET    | `/api/books`     | No   | Get all books |
+| POST   | `/api/books`     | Yes  | Add a book    |
+| PUT    | `/api/books/:id` | Yes  | Update a book |
+| DELETE | `/api/books/:id` | Yes  | Delete a book |
