@@ -39,10 +39,10 @@ una volta che avvi il backend con `npm start` e il frontend con `npm run dev`, i
 
 ### Routes
 
-| Method | Route            | Auth | Description   |
-| ------ | ---------------- | ---- | ------------- |
-| POST   | `/api/login`     | No   | Login         |
-| GET    | `/api/books`     | No   | Get all books |
-| POST   | `/api/books`     | Yes  | Add a book    |
-| PUT    | `/api/books/:id` | Yes  | Update a book |
-| DELETE | `/api/books/:id` | Yes  | Delete a book |
+| Method | Route            | Auth? | Descrizione       |
+| ------ | ---------------- | ----- | ----------------- |
+| POST   | `/api/login`     | No    | Login             |
+| GET    | `/api/books`     | No    | Get tutti i libri |
+| POST   | `/api/books`     | Yes   | Aggiungi libro    |
+| PUT    | `/api/books/:id` | Yes   | Aggiorna libro    |
+| DELETE | `/api/books/:id` | Yes   | Cancella libro    |
