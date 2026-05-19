@@ -244,11 +244,13 @@ function BookList({ isAuthenticated }) {
     }
   }
 
-  const filtered = books.filter(
-    (b) =>
-      b.titolo?.toLowerCase().includes(search.toLowerCase()) ||
-      b.autore?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = books
+    .filter(
+      (b) =>
+        b.titolo?.toLowerCase().includes(search.toLowerCase()) ||
+        b.autore?.toLowerCase().includes(search.toLowerCase()),
+    )
+    .sort((a, b) => a.titolo?.localeCompare(b.titolo));
 
   if (loading) return <p className="text-center mt-4">Caricamento...</p>;
   if (error)
